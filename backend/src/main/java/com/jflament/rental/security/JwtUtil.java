@@ -3,6 +3,7 @@ package com.jflament.rental.security;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.Claims;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
@@ -23,6 +24,15 @@ public class JwtUtil {
                 .claim("role", role)                     // rôle custom
                 .signWith(key)                           // signature
                 .compact();
+    }
+
+    public static Claims validateToken(String token) {
+        // retourne les claims si le token est valide, sinon lance une exception
+        return Jwts.parser()
+                .setSigningKey(key)   // la clé secrète pour vérifier la signature
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     public static SecretKey getKey() {
