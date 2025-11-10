@@ -26,16 +26,33 @@ public class JwtUtil {
                 .compact();
     }
 
-    public static Claims validateToken(String token) {
-        // retourne les claims si le token est valide, sinon lance une exception
-        return Jwts.parser()
-                .setSigningKey(key)   // la clé secrète pour vérifier la signature
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+    public static boolean validateToken(String token) {
+        try {
+            Jwts.parser()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token); // parse ok = token valide
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public static SecretKey getKey() {
         return key;
+    }
+
+    // Extraire l'email (ou username) depuis le token
+    public static String extractEmail(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            return claims.getSubject(); // normalement on met l'email dans "subject"
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

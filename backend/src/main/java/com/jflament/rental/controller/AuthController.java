@@ -3,9 +3,12 @@ package com.jflament.rental.controller;
 import com.jflament.rental.dto.JwtResponse;
 import com.jflament.rental.dto.LoginRequest;
 import com.jflament.rental.dto.RegisterRequest;
+import com.jflament.rental.dto.UserResponse;
 import com.jflament.rental.entity.User;
+import com.jflament.rental.security.CustomUserDetails;
 import com.jflament.rental.security.JwtUtil;
 import com.jflament.rental.service.UserService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
@@ -36,8 +39,15 @@ public class AuthController {
     @PostMapping("/login")
     public Map<String, String> login(@RequestBody LoginRequest request) {
         String token = JwtUtil.generateToken(request.getEmail(), "user");
-
-        // TODO: vérifier avec la base si besoin
         return Map.of("token", token);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body("Utilisateur non authentifié");
+        }
+        User user = userDetails.getUser();
+        return ResponseEntity.ok(new UserResponse(user));
     }
 }
