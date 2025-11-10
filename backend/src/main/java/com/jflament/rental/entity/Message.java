@@ -9,7 +9,7 @@ public class Message {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "rental_id")
@@ -29,8 +29,8 @@ public class Message {
     private LocalDateTime updatedAt;
 
     // Getters / setters
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
     public Rental getRental() { return rental; }
     public void setRental(Rental rental) { this.rental = rental; }

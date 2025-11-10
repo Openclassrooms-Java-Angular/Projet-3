@@ -6,7 +6,7 @@ import com.jflament.rental.entity.User;
 import java.time.LocalDateTime;
 
 public class UserResponse {
-    private final int id;
+    private final Long id;
     private final String name;
     private final String email;
 
@@ -25,7 +25,7 @@ public class UserResponse {
     }
 
     // getters
-    public int getId() { return id; }
+    public Long getId() { return id; }
     public String getName() { return name; }
     public String getEmail() { return email; }
     public LocalDateTime getCreatedAt() { return createdAt; }
