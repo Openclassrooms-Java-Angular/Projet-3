@@ -3,8 +3,8 @@ package com.jflament.rental.service;
 import com.jflament.rental.entity.User;
 import com.jflament.rental.repository.UserRepository;
 import com.jflament.rental.security.JwtUtil;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,11 +13,11 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.passwordEncoder = new BCryptPasswordEncoder();
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<User> getAllUsers() {
@@ -30,7 +30,7 @@ public class UserService {
 
     public User register(String name, String email, String rawPassword) throws Exception {
         if (userRepository.existsByEmail(email)) {
-            throw new Exception("Email déjà utilisé");
+            throw new Exception("Account already exists");
         }
         User user = new User();
         user.setName(name);
