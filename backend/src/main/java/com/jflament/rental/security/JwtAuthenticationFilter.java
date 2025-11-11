@@ -45,7 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             userService.findByEmail(email).ifPresentOrElse(user -> {
                 try {
-                    if (!JwtUtil.validateToken(token)) { // <-- juste un boolean
+                    if (!JwtUtil.validateToken(token)) {
                         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT token");
                         return;
                     }
