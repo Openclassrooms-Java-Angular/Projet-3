@@ -1,7 +1,11 @@
 package com.jflament.rental.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class MessageRequest {
+    @JsonProperty("rental_id")
     private Long rentalId;
+
     private String message;
 
     public Long getRentalId() {

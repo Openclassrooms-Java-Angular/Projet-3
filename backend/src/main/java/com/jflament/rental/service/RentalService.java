@@ -4,11 +4,12 @@ import com.jflament.rental.dto.RentalRequest;
 import com.jflament.rental.entity.Rental;
 import com.jflament.rental.entity.User;
 import com.jflament.rental.repository.RentalRepository;
-import com.jflament.rental.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -17,11 +18,9 @@ import java.util.Optional;
 public class RentalService {
 
     private final RentalRepository rentalRepository;
-    private final UserRepository userRepository;
 
-    public RentalService(RentalRepository rentalRepository, UserRepository userRepository) {
+    public RentalService(RentalRepository rentalRepository) {
         this.rentalRepository = rentalRepository;
-        this.userRepository = userRepository;
     }
 
     public List<Rental> getAllRentals() {
@@ -44,6 +43,11 @@ public class RentalService {
         return rentalRepository.save(rental);
     }
 
+    public void createFromMultipart(RentalRequest request, User owner) {
+        // gérer l'image si nécessaire
+        create(request, owner);
+    }
+
     public Optional<Rental> update(Long id, RentalRequest request, User owner) {
         return rentalRepository.findById(id).map(rental -> {
             // vérifier que l'utilisateur est bien le propriétaire
@@ -60,5 +64,17 @@ public class RentalService {
 
             return rentalRepository.save(rental);
         });
+    }
+
+    public boolean updateFromMultipart(Long id, String name, BigDecimal surface, BigDecimal price,
+                                       String description, MultipartFile picture, User owner) {
+        return update(id, new RentalRequest(name, surface, price, picture.getName(), description), owner)
+                .map(rental -> {
+                    if (picture != null) {
+                        // gérer l'image si nécessaire
+                    }
+                    return true;
+                })
+                .orElse(false);
     }
 }

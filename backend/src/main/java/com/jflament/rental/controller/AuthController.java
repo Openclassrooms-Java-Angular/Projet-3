@@ -1,6 +1,5 @@
 package com.jflament.rental.controller;
 
-import com.jflament.rental.dto.JwtResponse;
 import com.jflament.rental.dto.LoginRequest;
 import com.jflament.rental.dto.RegisterRequest;
 import com.jflament.rental.dto.UserResponse;
@@ -32,36 +31,30 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
-        try {
-            User user = userService.register(request.getName(), request.getEmail(), request.getPassword());
-            String token = userService.generateToken(user);
-
-            // retourner le token au client
-            return ResponseEntity.ok(new JwtResponse(token));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+    public ResponseEntity<Map<String, String>> register(@RequestBody RegisterRequest request) {
+        // vérification des champs requis
+        if (request.getName() == null || request.getName().isBlank() ||
+                request.getEmail() == null || request.getEmail().isBlank() ||
+                request.getPassword() == null || request.getPassword().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of()); // renvoie {}
         }
+
+        User user = userService.register(request.getName(), request.getEmail(), request.getPassword());
+        String token = userService.generateToken(user);
+
+        return ResponseEntity.ok(Map.of("token", token));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest request) {
         Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
 
-        if (userOpt.isEmpty()) {
+        if (userOpt.isEmpty() || !passwordEncoder.matches(request.getPassword(), userOpt.get().getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "User not found"));
+                    .body(Map.of("message", "error"));
         }
 
         User user = userOpt.get();
-
-        // vérification du mot de passe
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Incorrect password"));
-        }
-
-        // authentifié
         String token = JwtUtil.generateToken(user.getEmail(), "user");
 
         return ResponseEntity.ok(Map.of("token", token));
@@ -70,8 +63,9 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
         if (userDetails == null) {
-            return ResponseEntity.status(401).body("User not authenticated");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of());
         }
+
         User user = userDetails.getUser();
         return ResponseEntity.ok(new UserResponse(user));
     }

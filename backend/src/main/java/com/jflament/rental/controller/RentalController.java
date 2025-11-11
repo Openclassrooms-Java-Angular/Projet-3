@@ -2,7 +2,6 @@ package com.jflament.rental.controller;
 
 import com.jflament.rental.dto.RentalRequest;
 import com.jflament.rental.dto.RentalResponse;
-import com.jflament.rental.entity.Rental;
 import com.jflament.rental.entity.User;
 import com.jflament.rental.security.CustomUserDetails;
 import com.jflament.rental.service.RentalService;
@@ -11,8 +10,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/rentals")
@@ -25,13 +27,18 @@ public class RentalController {
     }
 
     @GetMapping
-    public ResponseEntity<List<RentalResponse>> getAll() {
+    public ResponseEntity<Map<String, List<RentalResponse>>> getAll() {
         List<RentalResponse> rentals = rentalService.getAllRentals()
                 .stream()
                 .map(RentalResponse::new)
                 .toList();
-        return ResponseEntity.ok(rentals);
+
+        // on enveloppe la liste dans une map avec la clé "rentals"
+        Map<String, List<RentalResponse>> response = Map.of("rentals", rentals);
+        return ResponseEntity.ok(response);
     }
+
+
     // GET /api/rentals/{id}
     @GetMapping("/{id}")
     public ResponseEntity<RentalResponse> getRentalById(@PathVariable Long id) {
@@ -41,22 +48,57 @@ public class RentalController {
     }
 
     // POST /api/rentals
-    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<RentalResponse> createRental(@RequestBody RentalRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        User owner = userDetails.getUser(); // récupère l’entité User du JWT
-        Rental rental = rentalService.create(request, owner);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new RentalResponse(rental));
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, String>> createRental(
+            @RequestParam("name") String name,
+            @RequestParam("surface") BigDecimal surface,
+            @RequestParam("price") BigDecimal price,
+            @RequestParam("description") String description,
+            @RequestParam(value = "picture", required = false) MultipartFile picture,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of());
+        }
+
+        // validation minimale
+        if (name == null || description == null || picture == null) {
+            return ResponseEntity.badRequest().body(Map.of());
+        }
+
+        rentalService.createFromMultipart(new RentalRequest(name, surface, price, picture.getName(), description), userDetails.getUser());
+
+        return ResponseEntity.ok(Map.of("message", "Rental created !"));
     }
 
     // PUT /api/rentals/{id}
-    @PutMapping("/{id}")
-    public ResponseEntity<RentalResponse> updateRental(@PathVariable Long id,
-                                                       @RequestBody RentalRequest request,
-                                                       @AuthenticationPrincipal CustomUserDetails userDetails) {
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, String>> updateRental(
+            @PathVariable Long id,
+            @RequestParam("name") String name,
+            @RequestParam("surface") BigDecimal surface,
+            @RequestParam("price") BigDecimal price,
+            @RequestParam("description") String description,
+            @RequestParam(value = "picture", required = false) MultipartFile picture,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of());
+        }
+
         User owner = userDetails.getUser();
 
-        return rentalService.update(id, request, owner)
-                .map(r -> ResponseEntity.ok(new RentalResponse(r)))
-                .orElse(ResponseEntity.notFound().build());
+        // Validation minimale si nécessaire
+        if (name == null || description == null) {
+            return ResponseEntity.badRequest().body(Map.of());
+        }
+
+        boolean updated = rentalService.updateFromMultipart(id, name, surface, price, description, picture, owner);
+
+        if (updated) {
+            return ResponseEntity.ok(Map.of("message", "Rental updated !"));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 }

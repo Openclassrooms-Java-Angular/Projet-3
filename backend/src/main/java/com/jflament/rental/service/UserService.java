@@ -28,10 +28,12 @@ public class UserService {
         return userRepository.findById(id).orElse(null);
     }
 
-    public User register(String name, String email, String rawPassword) throws Exception {
+    public User register(String name, String email, String rawPassword) {
         if (userRepository.existsByEmail(email)) {
-            throw new Exception("Account already exists");
+            // on ne lance pas d'exception pour ne pas exposer de message
+            return null;
         }
+
         User user = new User();
         user.setName(name);
         user.setEmail(email);

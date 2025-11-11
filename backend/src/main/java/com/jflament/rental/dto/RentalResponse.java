@@ -1,18 +1,25 @@
 package com.jflament.rental.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.jflament.rental.entity.Rental;
 
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+
 public class RentalResponse {
     private Long id;
     private String name;
     private BigDecimal surface;
     private BigDecimal price;
-    private String picture;
+    private List<String> picture;
     private String description;
     private Long ownerId;
+
+    @JsonProperty("created_at")
     private String createdAt;
+
+    @JsonProperty("updated_at")
     private String updatedAt;
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy/MM/dd");
@@ -22,7 +29,7 @@ public class RentalResponse {
         this.name = rental.getName();
         this.surface = rental.getSurface();
         this.price = rental.getPrice();
-        this.picture = rental.getPicture();
+        this.picture = rental.getPicture() != null ? List.of(rental.getPicture()) : List.of();
         this.description = rental.getDescription();
         this.ownerId = rental.getOwner().getId();
         this.createdAt = rental.getCreatedAt() != null ? rental.getCreatedAt().format(FORMATTER) : null;
@@ -61,11 +68,11 @@ public class RentalResponse {
         this.price = price;
     }
 
-    public String getPicture() {
+    public List<String> getPicture() {
         return picture;
     }
 
-    public void setPicture(String picture) {
+    public void setPicture(List<String> picture) {
         this.picture = picture;
     }
 

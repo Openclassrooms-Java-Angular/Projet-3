@@ -9,6 +9,14 @@ public class RentalRequest {
     private String picture;
     private String description;
 
+    public RentalRequest(String name, BigDecimal surface, BigDecimal price, String picture, String description) {
+        this.name = name;
+        this.surface = surface;
+        this.price = price;
+        this.picture = picture;
+        this.description = description;
+    }
+
     public String getName() {
         return name;
     }

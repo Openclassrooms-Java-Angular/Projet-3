@@ -1,15 +1,14 @@
 package com.jflament.rental.controller;
 
 import com.jflament.rental.dto.MessageRequest;
-import com.jflament.rental.dto.MessageResponse;
-import com.jflament.rental.entity.Message;
 import com.jflament.rental.entity.User;
 import com.jflament.rental.security.CustomUserDetails;
 import com.jflament.rental.service.MessageService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/messages")
@@ -21,10 +20,17 @@ public class MessageController {
     }
 
     @PostMapping
-    public ResponseEntity<MessageResponse> createMessage(@RequestBody MessageRequest request,
-                                                         @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<Map<String, String>> createMessage(
+            @RequestBody MessageRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        if (request.getRentalId() == null || request.getMessage() == null || userDetails == null) {
+            return ResponseEntity.badRequest().body(Map.of());
+        }
+
         User user = userDetails.getUser();
-        Message message = messageService.create(request, user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new MessageResponse(message));
+        messageService.create(request, user);
+
+        return ResponseEntity.ok(Map.of("message", "Message send with success"));
     }
 }
