@@ -4,7 +4,6 @@ import com.jflament.rental.dto.LoginRequest;
 import com.jflament.rental.dto.RegisterRequest;
 import com.jflament.rental.dto.UserResponse;
 import com.jflament.rental.entity.User;
-import com.jflament.rental.repository.UserRepository;
 import com.jflament.rental.security.CustomUserDetails;
 import com.jflament.rental.security.JwtUtil;
 import com.jflament.rental.service.UserService;
@@ -21,12 +20,10 @@ import java.util.Optional;
 @RequestMapping("/api/auth")
 public class AuthController {
     private final UserService userService;
-    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthController(UserService userService, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthController(UserService userService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
-        this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -47,7 +44,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest request) {
-        Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
+        Optional<User> userOpt = userService.findByEmail(request.getEmail());
 
         if (userOpt.isEmpty() || !passwordEncoder.matches(request.getPassword(), userOpt.get().getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
