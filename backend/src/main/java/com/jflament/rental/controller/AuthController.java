@@ -62,10 +62,6 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of());
-        }
-
         User user = userDetails.getUser();
         return ResponseEntity.ok(new UserResponse(user));
     }
