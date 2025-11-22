@@ -35,6 +35,36 @@ CREATE DATABASE VOTRE_BASE;
 
 ```mysql -u VOTRE_LOGIN -p VOTRE_BASE < frontend/ressources/sql/script.sql```
 
+### Configurer AWS
+
+- si besoin, créer un utilisateur
+- créer un bucket pour le stockage des images
+- donner les droits personnalisés suivants à l'utilisateur (écriture, lecture et suppression sur le bucket) :
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllowS3ReadWriteSpecificBucket",
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:DeleteObject"
+            ],
+            "Resource": "arn:aws:s3:::oc3-rental-uploads/*"
+        },
+        {
+            "Sid": "AllowBucketListing",
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListBucket"
+            ],
+            "Resource": "arn:aws:s3:::oc3-rental-uploads"
+        }
+    ]
+}
+```
 
 ## 3. Construire l'application back-end
 
