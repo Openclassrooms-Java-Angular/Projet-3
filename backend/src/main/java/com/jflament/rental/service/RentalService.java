@@ -51,34 +51,7 @@ public class RentalService {
         rentalRepository.save(rental);
     }
 
-    public void createFromMultipart(RentalRequest request, User owner) {
-        create(request, owner);
-    }
-
-    public Optional<Rental> update(Long id, RentalRequest request, User owner) {
-        return rentalRepository.findById(id).map(rental -> {
-            // vérifier que l'utilisateur est bien le propriétaire
-            if (!rental.getOwner().getId().equals(owner.getId())) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Vous n'êtes pas le propriétaire de ce bien");
-            }
-
-            String fileUrl = null;
-            if (request.getPicture() != null && !request.getPicture().isEmpty()) {
-                fileUrl = safeUploadFile(request.getPicture());
-            }
-
-            rental.setName(request.getName());
-            rental.setSurface(request.getSurface());
-            rental.setPrice(request.getPrice());
-            rental.setPicture(fileUrl);
-            rental.setDescription(request.getDescription());
-            rental.setUpdatedAt(LocalDateTime.now());
-
-            return rentalRepository.save(rental);
-        });
-    }
-
-    public boolean updateFromMultipart(Long id, RentalRequest request, User owner) {
+    public boolean update(Long id, RentalRequest request, User owner) {
         Optional<Rental> optional = rentalRepository.findById(id);
         if (optional.isEmpty()) {
             return false;
@@ -88,19 +61,13 @@ public class RentalService {
 
         // vérifier que l’utilisateur est bien propriétaire
         if (!rental.getOwner().getId().equals(owner.getId())) {
-            throw new AccessDeniedException("Not your rental");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not own this rental");
         }
 
         rental.setName(request.getName());
         rental.setSurface(request.getSurface());
         rental.setPrice(request.getPrice());
         rental.setDescription(request.getDescription());
-
-        // si une nouvelle image est fournie → on remplace
-        if (request.getPicture() != null && !request.getPicture().isEmpty()) {
-            String url = safeUploadFile(request.getPicture());
-            rental.setPicture(url);
-        }
 
         rentalRepository.save(rental);
         return true;

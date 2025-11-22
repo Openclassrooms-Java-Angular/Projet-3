@@ -30,7 +30,7 @@ public class MessageService {
         return messageRepository.findById(id).orElse(null);
     }
 
-    public Message create(MessageRequest request, User user) {
+    public void create(MessageRequest request, User user) {
         Rental rental = rentalRepository.findById(request.getRentalId())
                 .orElseThrow(() -> new RuntimeException("Rental not found"));
 
@@ -43,6 +43,6 @@ public class MessageService {
         message.setCreatedAt(now);
         message.setUpdatedAt(now);
 
-        return messageRepository.save(message);
+        messageRepository.save(message);
     }
 }

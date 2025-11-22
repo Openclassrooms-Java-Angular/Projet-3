@@ -40,7 +40,6 @@ public class RentalController {
         return ResponseEntity.ok(response);
     }
 
-
     // GET /api/rentals/{id}
     @GetMapping("/{id}")
     public ResponseEntity<RentalResponse> getRentalById(@PathVariable Long id) {
@@ -75,7 +74,7 @@ public class RentalController {
                 description
         );
 
-        rentalService.createFromMultipart(req, userDetails.user());
+        rentalService.create(req, userDetails.user());
 
         return ResponseEntity.ok(Map.of("message", "Rental created!"));
     }
@@ -107,7 +106,7 @@ public class RentalController {
                 description
         );
 
-        boolean updated = rentalService.updateFromMultipart(id, req, userDetails.user());
+        boolean updated = rentalService.update(id, req, userDetails.user());
 
         if (updated) {
             return ResponseEntity.ok(Map.of("message", "Rental updated !"));

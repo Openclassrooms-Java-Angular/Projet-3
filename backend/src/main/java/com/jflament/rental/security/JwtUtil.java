@@ -38,10 +38,6 @@ public class JwtUtil {
         }
     }
 
-    public static SecretKey getKey() {
-        return key;
-    }
-
     // Extraire l'email (ou username) depuis le token
     public static String extractEmail(String token) {
         try {
