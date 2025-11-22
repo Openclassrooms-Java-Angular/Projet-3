@@ -2,18 +2,20 @@ package com.jflament.rental.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.jflament.rental.entity.Rental;
+import com.jflament.rental.service.S3StorageService;
 
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 public class RentalResponse {
     private Long id;
     private String name;
     private BigDecimal surface;
     private BigDecimal price;
-    private List<String> picture;
+    private String picture;
     private String description;
+
+    @JsonProperty("owner_id")
     private Long ownerId;
 
     @JsonProperty("created_at")
@@ -24,12 +26,12 @@ public class RentalResponse {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 
-    public RentalResponse(Rental rental) {
+    public RentalResponse(Rental rental, S3StorageService s3StorageService) {
         this.id = rental.getId();
         this.name = rental.getName();
         this.surface = rental.getSurface();
         this.price = rental.getPrice();
-        this.picture = rental.getPicture() != null ? List.of(rental.getPicture()) : List.of();
+        this.picture = s3StorageService.getFileUrl(rental.getPicture());
         this.description = rental.getDescription();
         this.ownerId = rental.getOwner().getId();
         this.createdAt = rental.getCreatedAt() != null ? rental.getCreatedAt().format(FORMATTER) : null;
@@ -68,11 +70,11 @@ public class RentalResponse {
         this.price = price;
     }
 
-    public List<String> getPicture() {
+    public String getPicture() {
         return picture;
     }
 
-    public void setPicture(List<String> picture) {
+    public void setPicture(String picture) {
         this.picture = picture;
     }
 

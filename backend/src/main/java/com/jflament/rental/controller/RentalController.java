@@ -2,9 +2,9 @@ package com.jflament.rental.controller;
 
 import com.jflament.rental.dto.RentalRequest;
 import com.jflament.rental.dto.RentalResponse;
-import com.jflament.rental.entity.User;
 import com.jflament.rental.security.CustomUserDetails;
 import com.jflament.rental.service.RentalService;
+import com.jflament.rental.service.S3StorageService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,16 +21,18 @@ import java.util.Map;
 public class RentalController {
 
     private final RentalService rentalService;
+    private final S3StorageService s3StorageService;
 
-    public RentalController(RentalService rentalService) {
+    public RentalController(RentalService rentalService, S3StorageService s3StorageServic) {
         this.rentalService = rentalService;
+        this.s3StorageService = s3StorageServic;
     }
 
     @GetMapping
     public ResponseEntity<Map<String, List<RentalResponse>>> getAll() {
         List<RentalResponse> rentals = rentalService.getAllRentals()
                 .stream()
-                .map(RentalResponse::new)
+                .map(r -> new RentalResponse(r, s3StorageService))
                 .toList();
 
         // on enveloppe la liste dans une map avec la clé "rentals"
@@ -43,7 +45,7 @@ public class RentalController {
     @GetMapping("/{id}")
     public ResponseEntity<RentalResponse> getRentalById(@PathVariable Long id) {
         return rentalService.findById(id)
-                .map(r -> ResponseEntity.ok(new RentalResponse(r)))
+                .map(r -> ResponseEntity.ok(new RentalResponse(r, s3StorageService)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -61,14 +63,21 @@ public class RentalController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of());
         }
 
-        // validation minimale
-        if (name == null || description == null || picture == null) {
+        if (name == null || description == null) {
             return ResponseEntity.badRequest().body(Map.of());
         }
 
-        rentalService.createFromMultipart(new RentalRequest(name, surface, price, picture.getName(), description), userDetails.getUser());
+        RentalRequest req = new RentalRequest(
+                name,
+                surface,
+                price,
+                picture,
+                description
+        );
 
-        return ResponseEntity.ok(Map.of("message", "Rental created !"));
+        rentalService.createFromMultipart(req, userDetails.user());
+
+        return ResponseEntity.ok(Map.of("message", "Rental created!"));
     }
 
     // PUT /api/rentals/{id}
@@ -86,14 +95,19 @@ public class RentalController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of());
         }
 
-        User owner = userDetails.getUser();
-
-        // Validation minimale si nécessaire
         if (name == null || description == null) {
             return ResponseEntity.badRequest().body(Map.of());
         }
 
-        boolean updated = rentalService.updateFromMultipart(id, name, surface, price, description, picture, owner);
+        RentalRequest req = new RentalRequest(
+                name,
+                surface,
+                price,
+                picture,
+                description
+        );
+
+        boolean updated = rentalService.updateFromMultipart(id, req, userDetails.user());
 
         if (updated) {
             return ResponseEntity.ok(Map.of("message", "Rental updated !"));
