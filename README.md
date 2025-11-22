@@ -20,23 +20,20 @@ cd Projet-3
 ## 2. Configuration du back-end
 
 ### Éditer le fichier :  
-```backend/src/main/resources/application.properties```  
+```backend/src/main/resources/application.properties```
 
-### Modifier les paramètres MySQL :
-```
-spring.datasource.url=jdbc:mysql://localhost:3306/oc_java_p3?useSSL=false&serverTimezone=UTC
-spring.datasource.username=
-spring.datasource.password=
-```
+### Renseigner la configuration :
+
+Dupliquer le fichier `application-secret.properties.example` en `application-secret.properties` et renseigner les paramètres :
 
 ### Créer la base de données :
 ```
-CREATE DATABASE oc_java_p3;
+CREATE DATABASE VOTRE_BASE;
 ```
 
 ### Importer les données initiales
 
-```mysql -u VOTRE_LOGIN -p oc_java_p3 < frontend/ressources/sql/script.sql```
+```mysql -u VOTRE_LOGIN -p VOTRE_BASE < frontend/ressources/sql/script.sql```
 
 
 ## 3. Construire l'application back-end
@@ -49,8 +46,8 @@ mvn clean install
 ## 4. Lancer l'application back-end
 
 ```
-cd target
-java -jar rental-0.0.1-SNAPSHOT.jar
+cd backend
+./mvnw spring-boot:run
 ```
 
 ### API

@@ -1,5 +1,6 @@
 package com.jflament.rental.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,9 +16,15 @@ import java.util.UUID;
 public class S3StorageService {
 
     private final S3Client s3Client;
-    private final String bucketName = "oc3-rental-uploads";
-    private final String folder = "uploads/";
 
+    @Value("${s3.bucket.url}")
+    private String bucketUrl;
+
+    @Value("${s3.bucket.name}")
+    private String bucketName;
+
+    @Value("${s3.bucket.folder}")
+    private String folder;
 
     public S3StorageService() {
         this.s3Client = S3Client.builder()
@@ -73,6 +80,6 @@ public class S3StorageService {
 
     public String getFileUrl(String key) {
         if (key == null || key.isEmpty()) return null;
-        return "https://" + bucketName + ".s3.amazonaws.com/" + folder + key;
+        return bucketUrl + folder + key;
     }
 }
