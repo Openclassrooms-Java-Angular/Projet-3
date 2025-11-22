@@ -59,7 +59,7 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        User user = userDetails.getUser();
+        User user = userDetails.user();
         return ResponseEntity.ok(new UserResponse(user));
     }
 }

@@ -28,7 +28,7 @@ public class MessageController {
             return ResponseEntity.badRequest().body(Map.of());
         }
 
-        User user = userDetails.getUser();
+        User user = userDetails.user();
         messageService.create(request, user);
 
         return ResponseEntity.ok(Map.of("message", "Message send with success"));
